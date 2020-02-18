@@ -13,7 +13,6 @@ import gpsdGPSListener
 import os
 import subprocess
 import sys
-#import udpServer
 import what3words
 from socket import socket, AF_INET, SOCK_DGRAM
 
@@ -50,8 +49,6 @@ def createConfigFile(configFileName):
             config.write(configfile)
             configfile.close()
 
-
-
 configfilename="./js8call.cfg"
 createConfigFile(configfilename)
 
@@ -86,7 +83,6 @@ class UserInterface:
     sock=None
         
     def __init__(self):
-        
         
         self.MAX_TIMER=600    
     
@@ -128,7 +124,6 @@ class UserInterface:
         
         lowerFrame=tk.Frame(self.mainWindow, bg="navy", bd=5)
         lowerFrame.place(relx=0.5,rely=0.4, relwidth=0.85, relheight=0.5, anchor='n')
-        
         
         self.setJS8CallGridButton = tk.Button(lowerFrame, text="Send Grid to JS8Call", command=lambda: self.sendGridToJS8Call(self.gridrefEntry.get()), bg="white", font=40)
         self.setJS8CallGridButton.place(relx=0.02, relwidth=0.45,relheight=0.2)
@@ -233,26 +228,18 @@ class UserInterface:
         except ValueError:
             message = {}
 
-        #if not message:
-        #    continue
-
         self.reply_to = addr
 
         if messageType!=None:
             self.send(messageType, messageText)
-            #self.messageText=None
-            #self.messageType=None
         
         self.sock.close()
 
 
     def sendGridToJS8Call(self, gridText):
         print('Sending Grid to JS8CAll...',gridText) 
-        #UDP_ENABLED=True
         self.sendMessageAndClose(TYPE_STATION_SETGRID, gridText)
-        #SendToJS8Call.send(self,TYPE_STATION_SETGRID, gridText)
         UDP_ENABLED=False
-        #self.getHeardList()
     def sendGridToALLCALL(self,gridText):
         messageToSend = TXT_ALLCALLGRID + gridText
         print("Sending ", messageToSend)
@@ -266,22 +253,16 @@ class UserInterface:
         print("Got Grid "+gpsText)
         if ngr!=None:
             print("Got NGR "+ngr)
-            
-        #    res = geocoder.convert_to_3wa(what3words.Coordinates(gpsl.getCurrentLat(), gpsl.getCurrentLon()))
-        #    print("What3Words: %s" % (res['words'],))
-        #    self.wtwStr.set(res['words'])
         
         self.var1.set(gpsText)
                 
         if gpsText!= "No Fix" and gpsText!='JJ00aa00':
             self.setJS8CallGridButton.configure(state='normal')
             self.sendJS8CallALLCALLButton.configure(state='normal')
-            #self.sendWTWJS8CallALLCALLButton.configure(state='normal')
             self.ngrStr.set(ngr)
         else:
             self.setJS8CallGridButton.configure(state='disabled')
             self.sendJS8CallALLCALLButton.configure(state='disabled')
-            #self.sendWTWJS8CallALLCALLButton.configure(state='disabled')
             self.ngrStr.set('No Fix')
             self.var1.set('No Fix')
         
@@ -294,7 +275,7 @@ class UserInterface:
 
 try:
 
-    gpsl = serialGPSlistener.GPSListenerWin()
+    gpsl = gpsdGPSlistener.GpsListener()
     gpsl.start()
 
     ui = UserInterface()
