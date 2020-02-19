@@ -13,8 +13,10 @@ import gpsdGPSListener
 import os
 import subprocess
 import sys
-import what3words
 from socket import socket, AF_INET, SOCK_DGRAM
+from tkinter import messagebox
+from tkinter.ttk import *
+from tkinter.scrolledtext import ScrolledText
 
 HEIGHT=500
 WIDTH=500
@@ -28,22 +30,28 @@ TYPE_TX_SEND='TX.SEND_MESSAGE'
 TYPE_GET_CALL_ACTIVITY="RX.GET_CALL_ACTIVITY"
 TYPE_WINDOWRAISE='WINDOW.RAISE'
 TXT_ALLCALLGRID='@APRSIS GRID '
-TXT_ALLCALL='@ALLCALL '
+TXT_APRSIS='@APRSIS'
 TYPE_STATION_GETCALLSIGN='STATION.GET_CALLSIGN'
 UDP_ENABLED=False
+MSG_ERROR='ERROR'
+MSG_INFO='INFO'
+MSG_WARN='WARN'
+timeinmins=10
 
 text=""
 networkText=""
 hostname = ""
 
 def createConfigFile(configFileName):
-    #cretes the config file if it does not exist
+    #creates the config file if it does not exist
     if not os.path.isfile(configFileName):
             
         config = configparser.ConfigParser()
         config['NETWORK'] = {'serverip': '127.0.0.1',
                              'serverport': 2242
                             }
+        config['APP'] = {'autotimeperiod': 10
+                        }
             
         with open(configFileName, 'w') as configfile:
             config.write(configfile)
@@ -58,7 +66,8 @@ if os.path.isfile(configfilename):
 
     serverip = config.get('NETWORK','serverip')
     serverport = int(config.get('NETWORK', 'serverport'))
-
+    timeinmins = int(config.get('APP', 'autotimeperiod'))
+    
 listen = (serverip, serverport)
 
 class utils:
@@ -81,13 +90,102 @@ class UserInterface:
     getResponse=False
     laststatusString=""
     sock=None
+    def showMessage(self, messagetype, messageString):
+        if messagetype==MSG_ERROR:
+            messagebox.showerror("Error", messageString)
+        elif messagetype==MSG_WARN:
+            messagebox.showwarning("Warning",messageString)
+        elif messagetype==MSG_INFO:
+            messagebox.showinfo("Information",messageString)
+        
+    def createMessageString(self):
+        messageString=""
+        mode=""
+        if self.combo.get()=="Email":
+            mode="EMAIL-2"
+        elif self.combo.get()=="SMS":
+            mode = "SMSGTE"
+        elif self.combo.get()=="APRS":
+            mode=self.combo.get()
+           
+        mode = mode.ljust(9)
+        if self.tocall.get()=="":
+            return "Error, no email address is set"
+        
+        text=self.st.get('1.0', 'end-1c')  # Get all text in widget.
+    
+        if text=="":
+            return "Error, message is empty, please enter a message to send"
+        
+        number = self.seq
+        number = format(number, '02d')
+        if self.combo.get()=="Email":
+            message = "@APRSIS CMD :"+mode+":"+self.tocall.get()+" "+text+"{"+number+"}"
+        elif self.combo.get()=="APRS":
+            tocallsign=self.tocall.get()
+            tocallsign=tocallsign.ljust(9)
+            message = "@APRSIS CMD :"+tocallsign+":"+text+"{"+number+"}"
+        else: 
+            message = "@APRSIS CMD :"+mode+":@"+self.tocall.get()+" "+text+"{"+number+"}"
+        
+        self.seq=self.seq+1
+        #APRS sequence number is 2 char, so reset if >99
+        if self.seq>99:
+            self.seq=1
+        
+        messageString = message #mode+" "+self.tocall.get()+" "+text
+        return messageString
+
+#    def checkJS8CallRunning(self):
+#        
+#        retval = False
+#        if "js8call" in (p.name() for p in psutil.process_iter()):
+#            retval = True
+
+        return retval
+    
+    def setAPRSMessage(self):
+        messageType=TYPE_TX_SETMESSAGE
+        
+        messageString=self.createMessageString()
+        
+        if messageString.startswith("Error"):
+            self.showMessage(MSG_ERROR, messageString)
+            return
+    
+        self.sendMessage(messageType, messageString)
+        
+        self.showMessage(MSG_INFO, "Message text set in JS8Call, please use JS8Call to send the message.")
+            
+    def txAPRSMessage(self):
+        messageType=TYPE_TX_SEND
+        messageString=self.createMessageString()
+        
+        if messageString.startswith("Error"):
+            return
+        self.sendMessage(messageType, messageString)
+        self.showMessage(MSG_INFO,"Message sent to JS8Call. It will now transmit the message.")
+
+    def comboChange(self, event):
+        mode = self.combo.get()
+        if mode=="APRS":
+            self.callLbl.config(text='Enter Callsign (including SSID)')
+        elif mode=="Email":
+            self.callLbl.config(text='Enter Email Address to send to')
+        elif mode=="SMS":
+            self.callLbl.config(text='Enter cell phone number')
+ 
+    def autoComboChange(self, event):
+        mode = self.combo.get()
         
     def __init__(self):
-        
-        self.MAX_TIMER=600    
+
+        self.seq=1
+
+        self.MAX_TIMER=timeinmins*60    
     
         self.mainWindow=tk.Tk()
-        self.mainWindow.title("JS8CALL GPS Utilities by M0IAX")
+        self.mainWindow.title("JS8CALL Utilities by M0IAX")
         
         self.first=True
         self.getResponse=False
@@ -99,32 +197,23 @@ class UserInterface:
         self.var2 = StringVar()
 
         frame=tk.Frame(self.mainWindow, bg="navy", bd=5)
-        frame.place(relx=0.5,rely=0.05, relwidth=0.85, relheight=0.35, anchor='n')
+        frame.place(relx=0.5,rely=0.05, relwidth=0.85, relheight=0.5, anchor='n')
         
         self.gridrefEntry = tk.Entry(frame, font=40, textvariable=self.var1)
-        self.gridrefEntry.place(relwidth=0.48,relheight=0.3)
+        self.gridrefEntry.place(relwidth=0.48,relheight=0.18)
         
         self.getGridButton = tk.Button(frame, text="Get Grid from GPS", command=self.getGrid, bg="white", font=30)
-        self.getGridButton.place(relx=0.52,relwidth=0.48,relheight=0.3)
+        self.getGridButton.place(relx=0.52,relwidth=0.48,relheight=0.18)
         
         self.ngrStr = StringVar()
-        
         self.ngrStr.set("NGR not set")
-        self.NGRLabel = tk.Label(frame, textvariable=self.ngrStr )
-        self.NGRLabel.place(relx=0.05,rely=0.55, relwidth=0.9,relheight=0.18)
-        
-        self.ngrEntry = tk.Entry(frame, font=12, justify='center', textvariable=self.ngrStr)
-        self.ngrEntry.place(rely=0.55,relwidth=1,relheight=0.18)
-        
-        self.wtwStr = StringVar()
-         
-        self.wtwEntry = tk.Entry(frame, font=12, justify='center', textvariable=self.wtwStr)
-        self.wtwEntry.place(rely=0.75,relwidth=1, relheight=0.18)
-        
+
+        self.NGRLabel = tk.Label(frame, textvariable=self.ngrStr, font=12)
+        self.NGRLabel.place(relx=0.05,rely=0.2, relwidth=0.9,relheight=0.20)
         
         lowerFrame=tk.Frame(self.mainWindow, bg="navy", bd=5)
-        lowerFrame.place(relx=0.5,rely=0.4, relwidth=0.85, relheight=0.5, anchor='n')
-        
+        lowerFrame.place(relx=0.5,rely=0.25, relwidth=0.85, relheight=0.5, anchor='n')
+         
         self.setJS8CallGridButton = tk.Button(lowerFrame, text="Send Grid to JS8Call", command=lambda: self.sendGridToJS8Call(self.gridrefEntry.get()), bg="white", font=40)
         self.setJS8CallGridButton.place(relx=0.02, relwidth=0.45,relheight=0.2)
         self.setJS8CallGridButton.configure(state='disabled')
@@ -133,24 +222,72 @@ class UserInterface:
         self.sendJS8CallALLCALLButton.place(relx=0.55,relwidth=0.44,relheight=0.2)
         self.sendJS8CallALLCALLButton.configure(state='disabled')
         
-        self.autoGridToJS8Call = 0
-        self.autoGridCheck = tk.Checkbutton(lowerFrame, text="Auto update JS8Call Grid every 10 minutes.", variable=self.autoGridToJS8Call, command=self.cb)
-        self.autoGridCheck.place(relx=0.05,rely=0.5, relwidth=0.9,relheight=0.1)
+        self.autocombo = Combobox(lowerFrame, state='readonly')
+        self.autocombo.state='disabled'
+        self.autocombo.bind('<<ComboboxSelected>>', self.comboChange)    
+        self.autocombo['values']= ("Auto update JS8Call Grid", "Auto TX Grid to APRSIS")
+ 
+        self.autocombo.current(0) #set the selected item
+        self.autocombo.place(relx=0.05,rely=0.23, relwidth=0.9,relheight=0.1)
         
-        self.timerlabel = tk.Label(lowerFrame,text="When timer reaches zero\nThe Grid in JS8Call will be updated.\nIt does NOT transmit, use the button above to do that.", bg="navy", fg="white")
-        self.timerlabel.place(relx=0.05,rely=0.6, relwidth=0.9,relheight=0.18)
+        self.autoGridToJS8Call = 0
+        self.autoGridCheck = tk.Checkbutton(lowerFrame, text="Enable Auto update every "+str(timeinmins)+" mins.", variable=self.autoGridToJS8Call, command=self.cb)
+        self.autoGridCheck.place(relx=0.05,rely=0.33, relwidth=0.9,relheight=0.1)
         
         self.timer=30
         self.timerStr = StringVar()
         
         self.timerStr.set("Timer Not Active")
         self.timerlabel = tk.Label(lowerFrame, textvariable=self.timerStr )
-        self.timerlabel.place(relx=0.05,rely=0.9, relwidth=0.9,relheight=0.1)
+        self.timerlabel.place(relx=0.05,rely=0.43, relwidth=0.9,relheight=0.1)
         
+        ############################################################
+        #                 APRS Messageing form                     #
+        ############################################################
+        aprsFrame=tk.Frame(self.mainWindow, bg="black", bd=5)
+        aprsFrame.place(relx=0.5,rely=0.55, relwidth=0.85, relheight=0.4, anchor='n')
+       
+        self.aprstypelabel = Label(aprsFrame, text="APRS Message Type", justify="left")
+        self.aprstypelabel.place(relx=0.01, relwidth=0.3, relheight=0.1)
+ 
+        self.combo = Combobox(aprsFrame, state='readonly')
+        self.combo.bind('<<ComboboxSelected>>', self.comboChange)    
+        self.combo['values']= ("Email", "SMS", "APRS")
+        self.combo.current(0) #set the selected item
+        self.combo.place(relx=0.42, relwidth=0.3, relheight=0.1)
+ 
+        self.lbl1 = Label(aprsFrame, text="JS8Call Mode", justify="left")
+        self.lbl1.place(relx=0.01, rely=0.15)
+ 
+        self.combo2 = Combobox(aprsFrame, state='readonly')
+        self.combo2['values']= ("Normal")
+        self.combo2.current(0) #set the selected item
+        self.combo2.place(relx=0.42, rely=0.15)
+ 
+        self.callLbl = Label(aprsFrame, text="Enter Email Address", justify="left")
+        self.callLbl.place(relx=0.01, rely=0.3)
+ 
+        self.tocall = Entry(aprsFrame,width=37)
+        self.tocall.place(relx=0.42, rely=0.3)
+ 
+        self.msgLabel = Label(aprsFrame, text="Message Text", justify="left")
+        self.msgLabel.place(relx=0.01, rely=0.45)
+ 
+        self.st = ScrolledText(aprsFrame, height=5, width=30)
+        self.st.place(relx=0.35, rely=0.45)
+
+        self.btn = Button(aprsFrame, text="Set JS8Call Text", command=self.setAPRSMessage, width=20)
+        self.btn.place(relx=0.01, rely=0.6)
+
+        self.btn2 = Button(aprsFrame, text="TX With JS8Call", command=self.txAPRSMessage, width=20)
+        self.btn2.place(relx=0.01, rely=0.74)
+        
+        self.note1label = Label(aprsFrame, text="Click Set JS8Call text to set the message text in JS8Call", justify="center", wraplength=300)
+        self.note1label = Label(aprsFrame, text="Click TX with JS8Call to set the message text in JS8Call and start transmitting", justify="center", wraplength=300)
+
         self.update_timer()
         self.update_status_timer()
         self.mainWindow.mainloop()
-     
     
     def cb(self):
         if self.autoGridToJS8Call==0:
@@ -158,18 +295,30 @@ class UserInterface:
         else:
             self.autoGridToJS8Call=0
             self.timerStr.set("Timer Not Active")
+            
     def update_timer(self):
         if self.autoGridToJS8Call==0:
             self.initTimer()
+            
         if self.autoGridToJS8Call==1:
+            
             if self.timer<=0:
                 self.initTimer()
             self.timer=self.timer-1
             t="Timer: " + str(self.timer)
             self.timerStr.set(t)
+            
             if self.timer<=0:
                 gridstr = self.getGrid()
-                self.sendGridToJS8Call(gridstr)
+                
+                combotext=self.autocombo.get()
+
+                if gridstr!=None and gridstr!='':
+                    if combotext=="Auto update JS8Call Grid":
+                        self.sendGridToJS8Call(gridstr)
+                    if combotext=="Auto TX Grid to APRSIS":    
+                        self.sendGridToALLCALL(gridstr)
+                        
                 self.initTimer()
         self.mainWindow.after(1000, self.update_timer)
     
@@ -186,7 +335,7 @@ class UserInterface:
         self.sock.bind(listen)
         
         content, addr = self.sock.recvfrom(65500)
-        print('incoming message:', ':'.join(map(str, addr)))
+        print('server ip and port:', ':'.join(map(str, addr)))
 
         try:
             message = json.loads(content)
@@ -210,7 +359,6 @@ class UserInterface:
         if '_ID' not in params:
             params['_ID'] = int(time.time()*1000)
             kwargs['params'] = params
-            #print("Params ". params)
         message = self.to_message(*args, **kwargs)
         print('sending outgoing message:', message)
         self.sock.sendto(message.encode(), self.reply_to)
@@ -221,7 +369,6 @@ class UserInterface:
         self.sock.bind(listen)
         
         content, addr = self.sock.recvfrom(65500)
-        print('incoming message:', ':'.join(map(str, addr)))
 
         try:
             message = json.loads(content)
@@ -240,17 +387,19 @@ class UserInterface:
         print('Sending Grid to JS8CAll...',gridText) 
         self.sendMessageAndClose(TYPE_STATION_SETGRID, gridText)
         UDP_ENABLED=False
+        
     def sendGridToALLCALL(self,gridText):
         messageToSend = TXT_ALLCALLGRID + gridText
         print("Sending ", messageToSend)
-        self.sendMessageAndClose(TYPE_TX_GRID, gridText)
+        self.sendMessageAndClose(TYPE_TX_GRID, messageToSend)
     
     def getGrid(self):
         print('Getting Grid from GPS')
         gpsText = gpsl.getMaidenhead()
         ngr = gpsl.get_ngr()
         
-        print("Got Grid "+gpsText)
+        if gpsText!=None:
+            print("Got Grid "+gpsText)
         if ngr!=None:
             print("Got NGR "+ngr)
         
@@ -275,13 +424,12 @@ class UserInterface:
 
 try:
 
-    gpsl = gpsdGPSlistener.GpsListener()
+    gpsl = serialGPSlistener.GPSListenerWin()
     gpsl.start()
 
     ui = UserInterface()
     
     gpsl.setReadGPS(False)
-  #  udp.close()
     
 finally:
     gpsl.setReadGPS(False)
