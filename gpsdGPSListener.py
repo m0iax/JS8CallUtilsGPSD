@@ -25,7 +25,7 @@ class GpsListener(threading.Thread):
         try:
             threading.Thread.__init__(self)
             self.readGPS=False
-        
+            self.status=""
             self.current_ngr = None
             self.current_lon = None
             self.current_lat = None
