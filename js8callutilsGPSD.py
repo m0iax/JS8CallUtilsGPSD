@@ -9,8 +9,8 @@ import configparser
 import tkinter as tk
 from tkinter import StringVar
 import time, json
-import gpsdGPSListener
 import os
+import gpsdGPSListener
 import subprocess
 import sys
 from socket import socket, AF_INET, SOCK_DGRAM
@@ -456,7 +456,7 @@ class UserInterface:
 
 try:
 
-    gpsl = gpsdGPSlistener.GPSListener()
+    gpsl = gpsdGPSListener.GPSListener()
     gpsl.start()
 
     ui = UserInterface()
