@@ -268,7 +268,7 @@ class UserInterface:
         self.callLbl.place(relx=0.01, rely=0.3)
  
         self.tocall = Entry(aprsFrame,width=37)
-        self.tocall.place(relx=0.42, rely=0.3, relwidth=0.4)
+        self.tocall.place(relx=0.42, rely=0.3, relwidth=0.5)
  
         self.msgLabel = Label(aprsFrame, text="Message Text", justify="left")
         self.msgLabel.place(relx=0.01, rely=0.45)
