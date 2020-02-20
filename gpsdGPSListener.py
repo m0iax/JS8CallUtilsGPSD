@@ -78,7 +78,7 @@ class GpsListener(threading.Thread):
 
     def run(self):
         try:
-            while self.runFlag:
+            while self.readGPS:
 
                 data = self.session.next()
                 #print(data)
@@ -126,7 +126,7 @@ class GpsListener(threading.Thread):
 
 if __name__ == "__main__":
     try:
-        gpsl = GPSListener()
+        gpsl = GpsListener()
         gpsl.start()    
         #gpsl.setReadGPS(False)
     except (KeyboardInterrupt, SystemExit):
