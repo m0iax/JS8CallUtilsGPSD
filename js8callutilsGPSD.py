@@ -423,7 +423,6 @@ class UserInterface:
         
 
 try:
-import gpsdGPSListener
 
     gpsl = gpsdGPSListener.GpsListener()
     gpsl.start()
