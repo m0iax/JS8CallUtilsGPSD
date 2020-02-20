@@ -51,7 +51,8 @@ class GpsListener(threading.Thread):
        return self.current_gpstime
    def get_current_mhgrid(self):
        return self.current_mhgrid
-    
+   def getMaidenhead(self):
+       return self.current_mhgrid 
    def get_current_ngr(self):
        return self.current_ngr
     
