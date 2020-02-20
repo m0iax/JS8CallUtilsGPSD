@@ -199,20 +199,17 @@ class UserInterface:
         frame=tk.Frame(self.mainWindow, bg="navy", bd=5)
         frame.place(relx=0.5,rely=0.05, relwidth=0.85, relheight=0.5, anchor='n')
         
-        self.titleLabel = tk.Label(frame, font=12, text="Madenhead Locator")
-        self.titleLabel.place(relx=0.05, relwidth=0.9,relheight=0.10)
-        
         self.gridrefEntry = tk.Entry(frame, font=40, textvariable=self.var1)
-        self.gridrefEntry.place(rely=0.18, relwidth=0.48,relheight=0.18)
+        self.gridrefEntry.place(relwidth=0.48,relheight=0.18)
         
         self.getGridButton = tk.Button(frame, text="Get Grid from GPS", command=self.getGrid, bg="white", font=30)
-        self.getGridButton.place(relx=0.52,rely=0.18,relwidth=0.48,relheight=0.18)
+        self.getGridButton.place(relx=0.52,relwidth=0.48,relheight=0.18)
         
         self.ngrStr = StringVar()
         self.ngrStr.set("NGR not set")
 
         self.NGRLabel = tk.Label(frame, textvariable=self.ngrStr, font=12)
-        #self.NGRLabel.place(relx=0.05,rely=0.2, relwidth=0.9,relheight=0.20)
+        self.NGRLabel.place(relx=0.05,rely=0.2, relwidth=0.9,relheight=0.20)
         
         lowerFrame=tk.Frame(self.mainWindow, bg="navy", bd=5)
         lowerFrame.place(relx=0.5,rely=0.25, relwidth=0.85, relheight=0.5, anchor='n')
@@ -247,47 +244,43 @@ class UserInterface:
         ############################################################
         #                 APRS Messageing form                     #
         ############################################################
-
         aprsFrame=tk.Frame(self.mainWindow, bg="black", bd=5)
         aprsFrame.place(relx=0.5,rely=0.55, relwidth=0.85, relheight=0.4, anchor='n')
-
-        self.aprstitleLabel = tk.Label(aprsFrame, font=10, text="APRS Messages")
-        self.aprstitleLabel.place(relx=0.05, relwidth=0.9,relheight=0.1)
        
         self.aprstypelabel = Label(aprsFrame, text="APRS Message Type", justify="left")
-        self.aprstypelabel.place(relx=0.01, rely=0.14,relwidth=0.3, relheight=0.1)
+        self.aprstypelabel.place(relx=0.01, relwidth=0.3, relheight=0.1)
  
         self.combo = Combobox(aprsFrame, state='readonly')
         self.combo.bind('<<ComboboxSelected>>', self.comboChange)    
         self.combo['values']= ("Email", "SMS", "APRS")
         self.combo.current(0) #set the selected item
-        self.combo.place(relx=0.42, rely=0.14, relwidth=0.3, relheight=0.1)
+        self.combo.place(relx=0.42, relwidth=0.3, relheight=0.1)
  
         self.lbl1 = Label(aprsFrame, text="JS8Call Mode", justify="left")
-        self.lbl1.place(relx=0.01, rely=0.27)
+        self.lbl1.place(relx=0.01, rely=0.15)
  
         self.combo2 = Combobox(aprsFrame, state='readonly')
         self.combo2['values']= ("Normal")
         self.combo2.current(0) #set the selected item
-        self.combo2.place(relx=0.42, rely=0.27, relwidth=0.3)
+        self.combo2.place(relx=0.42, rely=0.15, relwidth=0.3)
  
         self.callLbl = Label(aprsFrame, text="Enter Email Address", justify="left")
-        self.callLbl.place(relx=0.01, rely=0.41)
+        self.callLbl.place(relx=0.01, rely=0.3)
  
         self.tocall = Entry(aprsFrame,width=37)
-        self.tocall.place(relx=0.42, rely=0.41, relwidth=0.5)
+        self.tocall.place(relx=0.42, rely=0.3, relwidth=0.5)
  
         self.msgLabel = Label(aprsFrame, text="Message Text", justify="left")
-        self.msgLabel.place(relx=0.01, rely=0.56)
+        self.msgLabel.place(relx=0.01, rely=0.45)
  
-        self.st = ScrolledText(aprsFrame, height=5)
-        self.st.place(relx=0.35, rely=0.56, relwidth=0.6)
+        self.st = ScrolledText(aprsFrame, height=5, width=30)
+        self.st.place(relx=0.35, rely=0.45, relwidth=0.6)
 
         self.btn = Button(aprsFrame, text="Set JS8Call Text", command=self.setAPRSMessage, width=20)
-        self.btn.place(relx=0.01, rely=0.69, relwidth=0.3)
+        self.btn.place(relx=0.01, rely=0.6, relwidth=0.3)
 
         self.btn2 = Button(aprsFrame, text="TX With JS8Call", command=self.txAPRSMessage, width=20)
-        self.btn2.place(relx=0.01, rely=0.83, relwidth=0.3)
+        self.btn2.place(relx=0.01, rely=0.74, relwidth=0.3)
         
         self.note1label = Label(aprsFrame, text="Click Set JS8Call text to set the message text in JS8Call", justify="center", wraplength=300)
         self.note1label = Label(aprsFrame, text="Click TX with JS8Call to set the message text in JS8Call and start transmitting", justify="center", wraplength=300)
@@ -391,21 +384,11 @@ class UserInterface:
 
 
     def sendGridToJS8Call(self, gridText):
-        if gpsl.getStatus().startswith('Error'):
-            self.showMessage(MSG_ERROR, gpsl.getStatus())
-            return
-        if gridText==None:
-            return
         print('Sending Grid to JS8CAll...',gridText) 
         self.sendMessageAndClose(TYPE_STATION_SETGRID, gridText)
         UDP_ENABLED=False
         
     def sendGridToALLCALL(self,gridText):
-        if gpsl.getStatus().startswith('Error'):
-            self.showMessage(MSG_ERROR, gpsl.getStatus())
-            return
-        if gridText==None:
-            return
         messageToSend = TXT_ALLCALLGRID + gridText
         print("Sending ", messageToSend)
         self.sendMessageAndClose(TYPE_TX_GRID, messageToSend)
@@ -413,20 +396,14 @@ class UserInterface:
     def getGrid(self):
         print('Getting Grid from GPS')
         gpsText = gpsl.getMaidenhead()
-        if gpsText==None:
-            gpsText = "No Fix"
-            
         ngr = gpsl.get_ngr()
         
-        if gpsText!=None:
-            if gpsText=='None':
-                gpsText="No Fix"
-            #print("Got Grid "+gpsText)
-        if ngr!=None:
-            None
-            #print("Got NGR "+ngr)
-        if gpsl.getStatus().startswith('Error'):
-            gpsText=gpsl.getStatus()
+        #if gpsText!=None:
+        #    print("Got Grid "+gpsText)
+        #if ngr!=None:
+        #    #print("Got NGR "+ngr)
+        #    None
+        
         self.var1.set(gpsText)
                 
         if gpsText!= "No Fix" and gpsText!='JJ00aa00':
