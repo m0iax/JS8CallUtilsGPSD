@@ -9,7 +9,7 @@ import configparser
 import tkinter as tk
 from tkinter import StringVar
 import time, json
-import gpsdGPSlistener
+import gpsdGPSListener
 import os
 import subprocess
 import sys
