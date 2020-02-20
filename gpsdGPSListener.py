@@ -71,8 +71,7 @@ class GpsListener(threading.Thread):
         return get_current_latlon()
     def get_ngr(self):
         #return self.current_ngr
-        return get_current_latlon()
-    
+        return ""
     def setrun(self,flag):
         print("Shutting down gps listener. Please wait...")
         self.runFlag=flag
