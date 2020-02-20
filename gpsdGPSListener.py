@@ -55,6 +55,8 @@ class GpsListener(threading.Thread):
        return self.current_mhgrid 
    def get_current_ngr(self):
        return self.current_ngr
+   def get_ngr(self):
+       return self.current_ngr
     
    def setrun(self,flag):
        print("Shutting down gps listener. Please wait...")
