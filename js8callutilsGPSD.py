@@ -243,7 +243,6 @@ class UserInterface:
         self.autoGridCheck.place(relx=0.05,rely=0.33, relwidth=0.9,relheight=0.1)
         
         self.timer=self.MAX_TIMER
-        self.timer=30
         self.timerStr = StringVar()
         
         self.timerStr.set("Timer Not Active")
