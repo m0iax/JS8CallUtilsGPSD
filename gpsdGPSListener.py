@@ -5,7 +5,7 @@ JS8CallGPSUI Copyright 2019 M0IAX
 http://m0iax.com
 '''
 
-from OSGridConverter import latlong2grid 
+#from OSGridConverter import latlong2grid 
 import threading
 from gps import *
 import time
@@ -58,7 +58,7 @@ class GpsListener(threading.Thread):
     def get_current_lat(self):
         return self.current_lat
     def get_current_latlon(self):
-        self.current_latlon = self.current_lat, self.current_lon
+        self.current_latlon = self.current_lat+" "+self.current_lon
         return self.current_latlon
     def get_current_gpstime(self):
         return self.current_gpstime
@@ -67,9 +67,11 @@ class GpsListener(threading.Thread):
     def getMaidenhead(self):
         return self.current_mhgrid 
     def get_current_ngr(self):
-        return self.current_ngr
+        #return self.current_ngr
+        return get_current_latlon()
     def get_ngr(self):
-        return self.current_ngr
+        #return self.current_ngr
+        return get_current_latlon()
     
     def setrun(self,flag):
         print("Shutting down gps listener. Please wait...")
@@ -103,15 +105,15 @@ class GpsListener(threading.Thread):
                         self.current_mhgrid = grid
                         currentMHGrid = grid
                         
-                        try:
-                            if grid != 'JJ00aa00':
-                                g=latlong2grid(lat,lon)
-                                self.current_ngr = str(g)
-                            else:
-                                self.current_ngr = ''
+                        #try:
+                        #    if grid != 'JJ00aa00':
+                                #g=latlong2grid(lat,lon)
+                                #self.current_ngr = str(g)
+                        #    else:
+                        #        self.current_ngr = ''
      
-                        except:
-                            self.current_ngr = ''
+                        #except:
+                        #    self.current_ngr = ''
  
                 time.sleep(1)
                 
