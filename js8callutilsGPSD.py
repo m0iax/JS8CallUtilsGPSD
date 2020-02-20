@@ -398,10 +398,11 @@ class UserInterface:
         gpsText = gpsl.getMaidenhead()
         ngr = gpsl.get_ngr()
         
-        if gpsText!=None:
-            print("Got Grid "+gpsText)
-        if ngr!=None:
-            print("Got NGR "+ngr)
+        #if gpsText!=None:
+        #    print("Got Grid "+gpsText)
+        #if ngr!=None:
+        #    #print("Got NGR "+ngr)
+        #    None
         
         self.var1.set(gpsText)
                 
