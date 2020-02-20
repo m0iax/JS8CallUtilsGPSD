@@ -277,10 +277,10 @@ class UserInterface:
         self.st.place(relx=0.35, rely=0.45)
 
         self.btn = Button(aprsFrame, text="Set JS8Call Text", command=self.setAPRSMessage, width=20)
-        self.btn.place(relx=0.01, rely=0.6)
+        self.btn.place(relx=0.01, rely=0.6, relwidth=0.3)
 
         self.btn2 = Button(aprsFrame, text="TX With JS8Call", command=self.txAPRSMessage, width=20)
-        self.btn2.place(relx=0.01, rely=0.74)
+        self.btn2.place(relx=0.01, rely=0.74, relwidth=0.3)
         
         self.note1label = Label(aprsFrame, text="Click Set JS8Call text to set the message text in JS8Call", justify="center", wraplength=300)
         self.note1label = Label(aprsFrame, text="Click TX with JS8Call to set the message text in JS8Call and start transmitting", justify="center", wraplength=300)
