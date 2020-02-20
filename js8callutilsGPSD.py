@@ -262,19 +262,19 @@ class UserInterface:
         self.combo2 = Combobox(aprsFrame, state='readonly')
         self.combo2['values']= ("Normal")
         self.combo2.current(0) #set the selected item
-        self.combo2.place(relx=0.42, rely=0.15)
+        self.combo2.place(relx=0.42, rely=0.15, relwidth=0.3)
  
         self.callLbl = Label(aprsFrame, text="Enter Email Address", justify="left")
         self.callLbl.place(relx=0.01, rely=0.3)
  
         self.tocall = Entry(aprsFrame,width=37)
-        self.tocall.place(relx=0.42, rely=0.3)
+        self.tocall.place(relx=0.42, rely=0.3, relwidth=0.5)
  
         self.msgLabel = Label(aprsFrame, text="Message Text", justify="left")
         self.msgLabel.place(relx=0.01, rely=0.45)
  
         self.st = ScrolledText(aprsFrame, height=5, width=30)
-        self.st.place(relx=0.35, rely=0.45)
+        self.st.place(relx=0.35, rely=0.45, relwidth=0.6)
 
         self.btn = Button(aprsFrame, text="Set JS8Call Text", command=self.setAPRSMessage, width=20)
         self.btn.place(relx=0.01, rely=0.6, relwidth=0.3)
