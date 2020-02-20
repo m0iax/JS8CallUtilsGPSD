@@ -19,7 +19,8 @@ def setexit(flag):
     exitFlag=flag
     
 class GpsListener(threading.Thread):
-
+   def setReadGPS(self, set):
+       self.readGPS=set
    def __init__(self):
        threading.Thread.__init__(self)
        self.current_ngr = None
