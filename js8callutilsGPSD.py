@@ -424,7 +424,7 @@ class UserInterface:
 
 try:
 
-    gpsl = gpsdGPSListener.GPSListenerWin()
+    gpsl = gpsdGPSListener.GpsListener()
     gpsl.start()
 
     ui = UserInterface()
