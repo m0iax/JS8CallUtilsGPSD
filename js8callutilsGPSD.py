@@ -255,7 +255,7 @@ class UserInterface:
         self.aprstitleLabel.place(relx=0.05, relwidth=0.9,relheight=0.1)
        
         self.aprstypelabel = Label(aprsFrame, text="APRS Message Type", justify="left")
-        self.aprstypelabel.place(relx=0.01, rely=0.14,relwidth=0.3, relheight=0.1)
+        self.aprstypelabel.place(relx=0.01, rely=0.14,relwidth=0.32, relheight=0.1)
  
         self.combo = Combobox(aprsFrame, state='readonly')
         self.combo.bind('<<ComboboxSelected>>', self.comboChange)    
