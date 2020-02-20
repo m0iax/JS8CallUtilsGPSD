@@ -9,12 +9,12 @@ import configparser
 import tkinter as tk
 from tkinter import StringVar
 import time, json
-import gpsdGPSlistener
+import gpsdGPSListener
 import os
 import subprocess
 import sys
 from socket import socket, AF_INET, SOCK_DGRAM
-from tkinter import IntVar, messagebox
+from tkinter import messagebox
 from tkinter.ttk import *
 from tkinter.scrolledtext import ScrolledText
 
@@ -51,8 +51,8 @@ def createConfigFile(configFileName):
                              'serverport': 2242
                             }
         config['APP'] = {'autotimeperiod': 10,
-                         'autoonatstart':0,
-                         'autoselectedoption':0
+                         'automode':1,
+                         'autoonstartup':1
                         }
             
         with open(configFileName, 'w') as configfile:
@@ -60,7 +60,6 @@ def createConfigFile(configFileName):
             configfile.close()
 
 configfilename="./js8call.cfg"
-
 createConfigFile(configfilename)
 
 if os.path.isfile(configfilename):
@@ -70,8 +69,6 @@ if os.path.isfile(configfilename):
     serverip = config.get('NETWORK','serverip')
     serverport = int(config.get('NETWORK', 'serverport'))
     timeinmins = int(config.get('APP', 'autotimeperiod'))
-    autoatstart = int(config.get('APP', 'autoonatstart'))
-    autooption = int(config.get('APP', 'autoselectedoption'))
     
 listen = (serverip, serverport)
 
@@ -147,7 +144,7 @@ class UserInterface:
 #        if "js8call" in (p.name() for p in psutil.process_iter()):
 #            retval = True
 
-        #return retval
+        return retval
     
     def setAPRSMessage(self):
         messageType=TYPE_TX_SETMESSAGE
@@ -235,14 +232,13 @@ class UserInterface:
         self.autocombo.bind('<<ComboboxSelected>>', self.comboChange)    
         self.autocombo['values']= ("Auto update JS8Call Grid", "Auto TX Grid to APRSIS")
  
-        self.autocombo.current(autooption) #set the selected item
+        self.autocombo.current(0) #set the selected item
         self.autocombo.place(relx=0.05,rely=0.23, relwidth=0.9,relheight=0.1)
         
-        self.autoGridToJS8Call = IntVar(value=autoatstart)
+        self.autoGridToJS8Call = 0
         self.autoGridCheck = tk.Checkbutton(lowerFrame, text="Enable Auto update every "+str(timeinmins)+" mins.", variable=self.autoGridToJS8Call, command=self.cb)
         self.autoGridCheck.place(relx=0.05,rely=0.33, relwidth=0.9,relheight=0.1)
         
-        self.timer=self.MAX_TIMER
         self.timer=30
         self.timerStr = StringVar()
         
@@ -261,7 +257,7 @@ class UserInterface:
         self.aprstitleLabel.place(relx=0.05, relwidth=0.9,relheight=0.1)
        
         self.aprstypelabel = Label(aprsFrame, text="APRS Message Type", justify="left")
-        self.aprstypelabel.place(relx=0.01, rely=0.14,relwidth=0.3, relheight=0.1)
+        self.aprstypelabel.place(relx=0.01, rely=0.14,relwidth=0.32, relheight=0.1)
  
         self.combo = Combobox(aprsFrame, state='readonly')
         self.combo.bind('<<ComboboxSelected>>', self.comboChange)    
@@ -303,19 +299,17 @@ class UserInterface:
         self.mainWindow.mainloop()
     
     def cb(self):
-        None
-        #if self.autoGridToJS8Call.get()==0:
-          #  self.autoGridToJS8Call.set(1)
-        #else:
-         #   self.autoGridToJS8Call.set(0)
-            #self.timerStr.set("Timer Not Active")
-            
-    def update_timer(self):
-        if self.autoGridToJS8Call.get()==0:
-            self.initTimer()
+        if self.autoGridToJS8Call==0:
+            self.autoGridToJS8Call=1
+        else:
+            self.autoGridToJS8Call=0
             self.timerStr.set("Timer Not Active")
             
-        if self.autoGridToJS8Call.get()==1:
+    def update_timer(self):
+        if self.autoGridToJS8Call==0:
+            self.initTimer()
+            
+        if self.autoGridToJS8Call==1:
             
             if self.timer<=0:
                 self.initTimer()
@@ -456,7 +450,7 @@ class UserInterface:
 
 try:
 
-    gpsl = gpsdGPSlistener.GPSListener()
+    gpsl = gpsdGPSListener.GpsListener()
     gpsl.start()
 
     ui = UserInterface()

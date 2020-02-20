@@ -12,8 +12,10 @@ import time
 import os
 import maidenhead as mh
 import sys
+import configparser
 
 exitFlag=False
+configfilename="./gps.cfg"
 
 def setexit(flag):
     exitFlag=flag
@@ -35,13 +37,56 @@ class GpsListener(threading.Thread):
             self.current_latlon = None
             self.runFlag=True
             self.enabled=False
-       
+            self.locator_precision=self.getLocatorPrecision()
             self.session = gps(mode=WATCH_ENABLE)
             self.readGPS=True
        
         except:
             self.setStatus("Error initilizing GPS, check com port and restart this app.")
+    def getSettingValue(self,section,setting):
+        global configfilename    
+        
+        self.createConfigFile(configfilename)
+        val = None
+        if os.path.isfile(configfilename):
+            config = configparser.ConfigParser()
+            config.read(configfilename)
+            val=config.get(section, setting)
+        
+        return val
+        
+    def getLocatorPrecision(self):
+        
+        prec=self.getSettingValue('LOCATOR', 'precision')
+            
+        p = 4
+        if prec!=None:
+            p=int(prec)
+            
+        return p
     
+    def getComportName(self):
+
+        comport = self.getSettingValue('HARDWARE','gpscomport')
+        
+        if comport==None: #and platform.system()==platform_windows:
+            comport = 'COM8'
+    
+        return comport
+    
+    def createConfigFile(self, configFileName):
+        #cretes the config file if it does not exist
+        if not os.path.isfile(configFileName):
+            
+            config = configparser.ConfigParser()
+            config['HARDWARE'] = {'gpscomport': 'COM8'
+                              }
+            config['LOCATOR'] = {'precision': 4
+                              }
+            
+            with open(configFileName, 'w') as configfile:
+                config.write(configfile)
+                configfile.close()    
     def setStatus(self, statusString):
         self.status=statusString  
     def getStatus(self):
@@ -80,7 +125,9 @@ class GpsListener(threading.Thread):
     def run(self):
         try:
             while self.readGPS:
-
+                if self.locator_precision==None:
+                    self.locator_precision=4
+                    
                 data = self.session.next()
                 #print(data)
                 if data['class'] == 'TPV':
@@ -95,9 +142,8 @@ class GpsListener(threading.Thread):
                     else:
                         latlon = (lat,lon)
                         
-                        grid = mh.toMaiden(lat, lon, precision=4)
+                        grid = mh.toMaiden(lat, lon, precision=self.locator_precision)
                         
-                        #grid = mh.toMaiden(lat, lon, 4)
                         self.current_lat = lat
                         self.current_lon = lon
                         self.current_gpstime = gpstime
