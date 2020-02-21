@@ -182,6 +182,17 @@ class UserInterface:
  
     def autoComboChange(self, event):
         mode = self.combo.get()
+    def appExit(self):
+        exit()
+    def about(self):
+        self.showMessage(MSG_INFO,'JS8Call Utilities\nBy Mark M0IAX\nhttp://m0iax.com/findme\n')
+    def buildMenu(self):
+        menu = Menu(self.mainWindow)
+        self.mainWindow.config(menu=menu)
+        file=Menu(menu)
+        file.add_command(label='About', command=self.about)
+        file.add_command(label='Exit', command=self.appExit)
+        menu.add_cascade(label='File',menu=file)
         
     def __init__(self):
 
@@ -299,6 +310,9 @@ class UserInterface:
 
         self.update_timer()
         self.update_status_timer()
+        
+        self.buildMenu()
+        
         self.mainWindow.mainloop()
     
     def cb(self):
