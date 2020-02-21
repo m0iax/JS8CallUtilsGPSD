@@ -14,7 +14,7 @@ import gpsdGPSListener
 import subprocess
 import sys
 from socket import socket, AF_INET, SOCK_DGRAM
-from tkinter import IntVar, messagebox
+from tkinter import IntVar, messagebox, Menu
 from tkinter.ttk import *
 from tkinter.scrolledtext import ScrolledText
 
