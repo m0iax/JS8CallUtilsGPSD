@@ -397,11 +397,12 @@ class UserInterface:
         self.sock.bind(listen)
         
         content, addr = self.sock.recvfrom(65500)
-
-        try:
-            message = json.loads(content)
-        except ValueError:
-            message = {}
+        #contentString = content.decode()
+        
+        #try:
+        #    message = json.loads(content)
+        #except ValueError:
+        #    message = {}
 
         self.reply_to = addr
 
