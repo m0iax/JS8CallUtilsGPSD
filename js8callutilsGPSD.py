@@ -59,7 +59,7 @@ def createConfigFile(configFileName):
             config.write(configfile)
             configfile.close()
 
-configfilename="./js8call.cfg"
+configfilename=sys.path[0]+"/js8call.cfg"
 
 createConfigFile(configfilename)
 

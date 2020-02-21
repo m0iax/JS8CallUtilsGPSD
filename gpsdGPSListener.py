@@ -15,7 +15,7 @@ import sys
 import configparser
 
 exitFlag=False
-configfilename="./gps.cfg"
+configfilename=sys.path[0]+"/gps.cfg"
 
 def setexit(flag):
     exitFlag=flag
