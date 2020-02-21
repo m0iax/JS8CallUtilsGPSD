@@ -15,6 +15,7 @@ enter the following on the command line:
 pip3 install maidenhead
 pip3 install serial
 pip3 install configparser
+pip3 install gps
 
 on unix now enter
 chmod +x js8callutilsGPSD.py
