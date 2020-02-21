@@ -204,7 +204,7 @@ class UserInterface:
         frame=tk.Frame(self.mainWindow, bg="navy", bd=5)
         frame.place(relx=0.5,rely=0.05, relwidth=0.85, relheight=0.5, anchor='n')
         
-        self.titleLabel = tk.Label(frame, font=12, text="Madenhead Locator")
+        self.titleLabel = tk.Label(frame, font=12, text="Maidenhead Locator")
         self.titleLabel.place(relx=0.05, relwidth=0.9,relheight=0.10)
         
         self.gridrefEntry = tk.Entry(frame, font=40, textvariable=self.var1)
@@ -242,7 +242,7 @@ class UserInterface:
         self.autoGridCheck = tk.Checkbutton(lowerFrame, text="Enable Auto update every "+str(timeinmins)+" mins.", variable=self.autoGridToJS8Call, command=self.cb)
         self.autoGridCheck.place(relx=0.05,rely=0.33, relwidth=0.9,relheight=0.1)
         
-        self.timer=self.MAX_TIMER
+        self.timer=60 
         self.timerStr = StringVar()
         
         self.timerStr.set("Timer Not Active")
