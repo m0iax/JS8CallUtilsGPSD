@@ -2,6 +2,8 @@
 
 This project is designed for use with JS8Call by Jordan KN4CRD - http://js8call.com
 
+This version will work on a Raspberry Pi (or computers running a unix OS) with the GPSD service configured. If not configured then the GPS features will not be available.
+
 If you have a GPS connected to your computer it will allow you to send your maidenhead grid to JS8Call to set its locator
 and/or to transmit to @APRSIS
 
